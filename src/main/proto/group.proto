@@ -1,0 +1,42 @@
+﻿syntax = "proto3";
+
+option java_package = "com.sendlix.api.v1";
+option java_outer_classname = "GroupProto";
+
+package sendlix.api.v1;
+import "EmailData.proto";
+
+service Group {
+	rpc InsertEmailToGroup(InsertEmailToGroupRequest) returns (UpdateResponse) {}
+	rpc RemoveEmailFromGroup(RemoveEmailFromGroupRequest) returns (UpdateResponse) {}
+	rpc CheckEmailInGroup(CheckEmailInGroupRequest) returns (CheckEmailInGroupResponse) {}
+}
+
+message InsertEmailToGroupRequest {
+ 	repeated EmailData emails = 1;
+	string groupId = 2;
+	map<string, string> substitutions = 3;
+}
+
+message RemoveEmailFromGroupRequest {
+	string email = 1;
+	string groupId = 2;
+}
+
+message UpdateResponse {
+	bool success = 1;
+	string message = 2;
+	int64 affectedRows = 3;
+}
+
+
+message CheckEmailInGroupRequest {
+	string email = 1;
+	string groupId = 2;
+}
+
+message CheckEmailInGroupResponse {
+	bool exists = 1;
+}
+
+

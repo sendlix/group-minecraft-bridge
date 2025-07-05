@@ -1,0 +1,5 @@
+name: ${rootProjectName}
+version: '${version}'
+main: com.sendlix.group.mc.core.SendlixPlugin
+author: Sendlix
+description: A BungeeCord plugin for let users subscribe to newsletters.

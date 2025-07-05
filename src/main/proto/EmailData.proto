@@ -1,0 +1,11 @@
+﻿syntax = "proto3";
+
+
+option java_package = "com.sendlix.api.v1";
+option java_outer_classname = "EmailProto";
+
+ // Email address information
+message EmailData {
+    string email = 1;
+    optional string name = 2;
+}

@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+option java_package = "com.sendlix.api.v1";
+option java_outer_classname = "AuthProto";
+
+package sendlix.api.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service Auth {
+	rpc GetJwtToken(AuthRequest) returns (AuthResponse) {}
+}
+message AuthResponse {
+	string token = 1;
+	google.protobuf.Timestamp expires = 2;
+}
+
+message AuthRequest {
+	oneof key {
+		ApiKey apiKey = 1;
+	}
+}
+
+message ApiKey {
+	int64 keyID = 1;
+	string secret = 2;
+}
