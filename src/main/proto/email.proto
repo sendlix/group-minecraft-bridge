@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+option java_package = "com.sendlix.api.v1";
+option java_outer_classname = "EmailProto";
+
+package sendlix.api.v1;
+
+import "google/protobuf/timestamp.proto";
+import "EmailData.proto";
+
+service Email {
+  rpc SendEmail (SendMailRequest) returns (SendEmailResponse) {}
+  rpc SendEmlEmail (EmlMailRequest) returns (SendEmailResponse) {}
+  rpc SendGroupEmail (GroupMailData) returns (SendEmailResponse) {}
+}
+
+message EmlMailRequest {
+  bytes mail = 1;
+  AdditionalInfos additionalInfos = 2;
+}
+
+message GroupMailData {
+  string groupId = 1;
+  string subject = 2;
+  EmailData from = 3;
+  string category = 4;
+  oneof body {
+   MailContent TextContent = 5;
+ };
+}
+
+message SendEmailResponse {
+  repeated string message = 1;
+  int64 emailsLeft = 2;
+}
+
+
+
+message MailContent {
+  string html = 1;
+  string text = 2;
+  bool tracking = 3;
+}
+
+message AttachmentData {
+    string contentUrl = 1;      
+    string type = 2;            // MIME type
+    string filename = 3;
+  }
+
+  message SendMailRequest {
+    // Email recipient fields
+    repeated EmailData to = 1;
+    repeated EmailData cc = 2;
+    repeated EmailData bcc = 3;
+  
+    // Sender information
+    EmailData from = 4;
+    optional EmailData reply_to = 5;
+  
+    // Email content fields
+    string subject = 6;
+    AdditionalInfos additionalInfos = 7;
+    oneof body {
+      MailContent TextContent = 8;
+    };
+  }
+  
+  
+
+
+message AdditionalInfos {
+  repeated AttachmentData attachments = 1;
+  optional string category = 2;  
+  optional google.protobuf.Timestamp send_at = 4;
+}
