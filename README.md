@@ -57,7 +57,7 @@ privacyPolicyUrl: "https://yourdomain.com/privacy-policy"
 
 1. Visit the Sendlix Dashboard
 2. Create a new API key and copy it
-3. Create a new group for newsletter subscriptions and copy the id. 
+3. Create a new group for newsletter subscriptions and copy the id.
 4. Replace the placeholder values in your `config.yml`:
    - `apiKey`: Your generated API key
    - `groupId`: Your target group ID for newsletter subscriptions
@@ -65,6 +65,7 @@ privacyPolicyUrl: "https://yourdomain.com/privacy-policy"
 IMPORTANT: The api key needs the permission `group.insert` to allow players to subscribe to the newsletter.
 
 ## Add Email Verification
+
 To enable email verification, add the following configuration to your `config.yml`:
 
 ```yaml
@@ -86,21 +87,32 @@ The following variables are automatically replaced in the email templates:
 - `{{code}}`: The unique verification code.
 - `{{username}}`: The player's username.
 
+To verify the email, players must enter the verification code using the command:
+
+```
+/newsletter -c <code>
+```
+
+Where `<code>` is the verification code sent to their email.
+
 ## 🎮 Usage
 
 ### For Players
 
 **Newsletter Subscription:**
+
 ```
 /newsletter <email> [--agree-privacy] [--silent]
 ```
 
 **Command Arguments:**
+
 - `<email>` - **Required**. Your email address (e.g., user@example.com)
 - `--agree-privacy` - **Optional**. Agrees to privacy policy (required if privacy policy URL is configured)
 - `--silent` - **Optional**. Suppresses messages (useful for backend server integration) the privacy policy confirmation will be sent to the player if the `--agree-privacy` flag is not set.
 
 **Examples:**
+
 ```
 /newsletter player@gmail.com
 /newsletter john.doe@web.de --agree-privacy
@@ -115,6 +127,7 @@ To access the newsletter command, players must have the permission `sendlix.news
 The plugin provides a comprehensive plugin message API for integration with backend servers.
 
 ### Communication Channel
+
 - **Channel Name**: `sendlix:newsletter`
 - **Direction**: Bidirectional (BungeeCord ↔ Backend Servers)
 
@@ -123,12 +136,14 @@ The plugin provides a comprehensive plugin message API for integration with back
 When a player's newsletter subscription status changes, BungeeCord automatically sends status updates to the player's current backend server.
 
 **Message Format:**
+
 ```
 Channel: "sendlix:newsletter"
 Data: Status enum byte array
 ```
 
 **Status Values:**
+
 - `email_added` - Email successfully added to newsletter
 - `email_not_added` - Email could not be added (validation failed, API error, etc.)
 - `email_already_exists` - Email is already subscribed to newsletter
@@ -140,12 +155,14 @@ Data: Status enum byte array
 Backend servers can trigger newsletter subscription commands by sending plugin messages.
 
 **Message Format:**
+
 ```
 Channel: "sendlix:newsletter"
 Data: Command arguments as UTF-8 string
 ```
 
 **Examples:**
+
 ```
 "user@example.com"
 "user@example.com --agree-privacy"
@@ -167,7 +184,7 @@ public void subscribePlayer(Player player, String email, boolean silent) {
     ByteArrayDataOutput out = ByteStreams.newDataOutput();
     String command = email + " --agree-privacy";
     if (silent) command += " --silent";
-    
+
     out.writeUTF(command);
     plugin.getServer().sendPluginMessage(this, "sendlix:newsletter", out.toByteArray());
 }
@@ -177,18 +194,18 @@ public void subscribePlayer(Player player, String email, boolean silent) {
 public void onPluginMessageReceived(String channel, Player player, byte[] message) {
     if (channel.equals("sendlix:newsletter")) {
         String status = new String(message, StandardCharsets.UTF_8);
-        
+
         switch (status) {
            case "email_added":
                 player.sendMessage("§a✓ Successfully subscribed to newsletter!");
                 // Award achievement, update database, etc.
                 giveNewsletterReward(player);
                 break;
-                
+
             case "email_already_exists":
                 player.sendMessage("§e⚠ You're already subscribed!");
                 break;
-                
+
             case "email_not_added":
                 player.sendMessage("§c✗ Subscription failed. Please try again.");
                 logFailedSubscription(player);
@@ -288,19 +305,23 @@ The plugin uses gRPC for communication with the Sendlix backend:
 ### Common Issues
 
 **Plugin doesn't load:**
+
 - Check your BungeeCord version (minimum 1.20)
 - Ensure all dependencies are present
 
 **API Connection Errors:**
+
 - Verify your Access Token
 - Check network connectivity
 - Review firewall settings
 
 **Configuration Errors:**
+
 - Validate YAML syntax
 - Ensure all required fields are filled
 
 **Plugin Message Issues:**
+
 - Ensure backend servers register the "sendlix:newsletter" channel
 - Verify plugin message data format matches expected structure
 - Check console logs for plugin message debugging information
