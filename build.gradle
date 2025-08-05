@@ -36,7 +36,7 @@ dependencies {
     // BungeeCord API from sonatype
     compileOnly 'net.md-5:bungeecord-api:1.21-R0.3'
 
-    implementation 'com.google.protobuf:protobuf-java:3.25.8'
+    implementation 'com.google.protobuf:protobuf-java:4.31.1'
 
     implementation 'io.grpc:grpc-protobuf:1.74.0'
     implementation 'io.grpc:grpc-stub:1.74.0'
@@ -46,7 +46,7 @@ dependencies {
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.25.8"
+        artifact = "com.google.protobuf:protoc:4.31.1"
     }
     plugins {
         grpc {
