@@ -2,7 +2,7 @@ package com.sendlix.group.mc.api;
 
 import com.sendlix.group.mc.config.PluginProperties;
 import io.grpc.ManagedChannel;
-import io.grpc.okhttp.OkHttpChannelBuilder;
+import io.grpc.netty.NettyChannelBuilder;
 
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -59,7 +59,7 @@ public class Channel {
 
         String userAgent = String.format("%s/%s", name, version);
 
-        return OkHttpChannelBuilder.forAddress(ENDPOINT, PORT)
+        return NettyChannelBuilder.forAddress(ENDPOINT, PORT)
                 .useTransportSecurity()
                 .userAgent(userAgent)
                 .build();

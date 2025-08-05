@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'idea'
     id("com.google.protobuf") version "0.9.5"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "9.0.0-rc3"
 }
 
 group = 'com.sendlix.group.mc'
@@ -35,17 +35,18 @@ sourceSets {
 dependencies {
     // BungeeCord API from sonatype
     compileOnly 'net.md-5:bungeecord-api:1.21-R0.3'
-    implementation 'io.grpc:grpc-protobuf:1.74.0'
 
+    implementation 'com.google.protobuf:protobuf-java:3.25.8'
+
+    implementation 'io.grpc:grpc-protobuf:1.74.0'
     implementation 'io.grpc:grpc-stub:1.74.0'
     implementation 'io.grpc:grpc-netty:1.74.0'
 
-    compileOnly 'org.apache.tomcat:annotations-api:6.0.53'
 }
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:4.31.1"
+        artifact = "com.google.protobuf:protoc:3.25.8"
     }
     plugins {
         grpc {
@@ -97,12 +98,10 @@ shadowJar {
 
     mergeServiceFiles()
 
-
     minimize {
         exclude(dependency('io.grpc:grpc-netty:.*'))
         exclude(dependency('io.grpc:grpc-core:.*'))
     }
-
     dependencies {
         include(dependency('io.grpc:.*'))
         include(dependency('io.netty:netty-codec-http2:.*'))
