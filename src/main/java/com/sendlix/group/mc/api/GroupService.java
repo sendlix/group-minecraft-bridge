@@ -86,8 +86,7 @@ public class GroupService {
             if (result.getSuccess()) {
                 Status.EMAIL_ADDED.sendStatusData(player );
                 messageSender.sendMessage(new ComponentBuilder("✓ ").color(ChatColor.GREEN).bold(true)
-                        .append("Subscription Successful!", ComponentBuilder.FormatRetention.NONE).color(ChatColor.GREEN).bold(false)
-                        .append("\n\nYou have successfully subscribed to our newsletter.").color(ChatColor.WHITE));
+                        .append("You have successfully subscribed to our newsletter.", ComponentBuilder.FormatRetention.NONE).color(ChatColor.GREEN).bold(false));
             } else {
                 onFailure(new RuntimeException("Subscription failed: " + result.getMessage()));
             }
