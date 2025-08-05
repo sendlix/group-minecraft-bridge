@@ -1,5 +1,7 @@
 package com.sendlix.group.mc.utils;
 
+import net.md_5.bungee.api.connection.ProxiedPlayer;
+
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -10,7 +12,9 @@ public enum Status {
 
     EMAIL_ADDED("email_added"),
     EMAIL_NOT_ADDED("email_not_added"),
-    EMAIL_ALREADY_EXISTS("email_already_exists");
+    EMAIL_ALREADY_EXISTS("email_already_exists"),
+    EMAIL_VERIFICATION_SENT("email_verification_sent"),
+    EMAIL_VERIFICATION_FAILED("email_verification_failed");
 
     private final String statusCode;
 
@@ -45,4 +49,17 @@ public enum Status {
     public String toString() {
         return statusCode;
     }
+    /**
+     * Sends the status data to the specified player.
+     * This method sends the status code as a plugin message to the player's server.
+     *
+     * @param player The player to send the status data to
+     */
+    public void sendStatusData(ProxiedPlayer player) {
+        if (player.getServer() != null && player.getServer().getInfo() != null) {
+            player.getServer().getInfo().sendData("sendlix:newsletter", getBytes());
+        }
+    }
+
+
 }

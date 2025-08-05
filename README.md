@@ -1,4 +1,3 @@
-
 # Sendlix Group Minecaft Bridge - BungeeCord Plugin
 
 ![GitHub Release](https://img.shields.io/github/release/sendlix/group-minecraft-bridge)
@@ -19,13 +18,15 @@ The Sendlix Newsletter Plugin seamlessly integrates into your BungeeCord server 
 - **User-friendly Messages**: Multilingual success and error messages
 - **Plugin Message API**: Inter-server communication for advanced integrations
 - **Configurable**: Flexible configuration options via YAML
+- **Email Verification**: Optional verification step for added security
+- **Automatic Player Data**: Minecraft username automatically added as `{{mc_username}}` substitution
 
 ## 🚀 Installation
 
 ### Prerequisites
 
 - BungeeCord Server (Version 1.20+)
-- Java 8 or higher
+- Java 11 or higher
 
 ### Setup
 
@@ -62,6 +63,28 @@ privacyPolicyUrl: "https://yourdomain.com/privacy-policy"
    - `groupId`: Your target group ID for newsletter subscriptions
 
 IMPORTANT: The api key needs the permission `group.insert` to allow players to subscribe to the newsletter.
+
+## Add Email Verification
+To enable email verification, add the following configuration to your `config.yml`:
+
+```yaml
+# Enable email verification (default: false)
+emailValidation: true
+
+# Sender email address for verification emails
+emailFrom: "noreply@yourdomain.com"
+```
+
+Enabling email verification ensures that new subscribers receive a verification email with a unique code. They must enter this code to complete their subscription.
+
+**Important:** To send emails, the API key requires the `sender` permission.
+
+When email verification is enabled, an `emails` folder is created in the config directory. This folder contains customizable email templates for verification emails.
+
+The following variables are automatically replaced in the email templates:
+
+- `{{code}}`: The unique verification code.
+- `{{username}}`: The player's username.
 
 ## 🎮 Usage
 
@@ -106,9 +129,11 @@ Data: Status enum byte array
 ```
 
 **Status Values:**
-- `EMAIL_ADDED` - Email successfully added to newsletter
-- `EMAIL_NOT_ADDED` - Email could not be added (validation failed, API error, etc.)
-- `EMAIL_ALREADY_EXISTS` - Email is already subscribed to newsletter
+- `email_added` - Email successfully added to newsletter
+- `email_not_added` - Email could not be added (validation failed, API error, etc.)
+- `email_already_exists` - Email is already subscribed to newsletter
+- `email_verification_failed` - The provided Email verification code is invalid or expired
+- `email_verification_sent` - The email verification code was sent successfully
 
 ### Incoming Messages (Backend Server → BungeeCord)
 
@@ -203,7 +228,7 @@ public void onPluginMessage(PluginMessageEvent event) {
 
 ### Build Requirements
 
-- Java 8+
+- Java 11+
 - Gradle 7.0+
 - Git
 

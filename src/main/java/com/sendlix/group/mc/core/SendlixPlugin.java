@@ -3,6 +3,7 @@ package com.sendlix.group.mc.core;
 import com.sendlix.group.mc.api.AccessToken;
 import com.sendlix.group.mc.api.Channel;
 import com.sendlix.group.mc.commands.NewsletterCommand;
+import com.sendlix.group.mc.config.EmailTemplateRepository;
 import com.sendlix.group.mc.config.SendlixConfig;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -15,7 +16,6 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
-import java.util.Properties;
 
 /**
  * Main plugin class for the Sendlix Newsletter BungeeCord plugin.
@@ -47,7 +47,6 @@ public final class SendlixPlugin extends Plugin implements Listener {
 
         } catch (Exception e) {
             getLogger().severe("Failed to enable plugin: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -134,8 +133,11 @@ public final class SendlixPlugin extends Plugin implements Listener {
             ConfigurationProvider provider = ConfigurationProvider.getProvider(YamlConfiguration.class);
             provider.save(config, configFile);
 
-            return  conf;
+            if(conf != null && conf.isEmailValidationEnabled()) {
+                EmailTemplateRepository.loadEmails(getDataFolder().getAbsolutePath() + File.separator + "emails" + File.separator);
+            }
 
+            return conf;
         } catch (IOException e) {
             getLogger().severe("Failed to load configuration: " + e.getMessage());
             return null;
@@ -163,7 +165,8 @@ public final class SendlixPlugin extends Plugin implements Listener {
         String groupId = getAndSetDefault(config, "groupId", SendlixConfig.DEFAULT_GROUP_ID);
         int rateLimitSeconds = getAndSetDefault(config, "rateLimitSeconds", SendlixConfig.DEFAULT_RATE_LIMIT_SECONDS);
         String privacyPolicy = config.getString("privacyPolicyUrl", null);
-
+        boolean emailValidation = getAndSetDefault(config, "emailValidation", false);
+        String emailFrom = config.getString("emailFrom", null);
 
         if (isDefaultValue(apiKey, SendlixConfig.DEFAULT_API_KEY) || isDefaultValue(groupId, SendlixConfig.DEFAULT_GROUP_ID)) {
             getLogger().severe("Please update your config.yml with valid apiKey and groupId.");
@@ -177,7 +180,7 @@ public final class SendlixPlugin extends Plugin implements Listener {
 
 
 
-        return new SendlixConfig(apiKey.trim(), groupId.trim(), rateLimitSeconds , privacyPolicy);
+        return new SendlixConfig(apiKey.trim(), groupId.trim(), rateLimitSeconds , privacyPolicy, emailValidation, emailFrom);
     }
 
     /**

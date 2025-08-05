@@ -18,6 +18,8 @@ public final class SendlixConfig {
     private final String apiKey;
     private final String groupId;
     private final int rateLimitSeconds;
+    private final boolean emailValidation;
+    private final String emailFrom;
 
     @Nullable
     private final String privacyPolicyUrl;
@@ -27,9 +29,12 @@ public final class SendlixConfig {
      * @param apiKey  The API key for Sendlix authentication
      * @param groupId The group ID for newsletter operations
      * @param rateLimitSeconds The rate limit in seconds between API calls (default: 5)
+     * @param privacyPolicyUrl Optional URL for the privacy policy, can be null
+     * @param emailValidation Optional flag if emails need to be validated before adding (default: false)
+     * @param emailFrom Optional email address to use as the sender for validation emails, can be null
      * @throws IllegalArgumentException if apiKey or groupId is null or empty, or rateLimitSeconds is invalid
      */
-    public SendlixConfig(@Nonnull String apiKey, @Nonnull String groupId, int rateLimitSeconds, String privacyPolicyUrl) {
+    public SendlixConfig(@Nonnull String apiKey, @Nonnull String groupId, int rateLimitSeconds, String privacyPolicyUrl, boolean emailValidation, String emailFrom) {
         if (apiKey.trim().isEmpty()) {
             throw new IllegalArgumentException("API key cannot be null or empty");
         }
@@ -44,9 +49,9 @@ public final class SendlixConfig {
         this.groupId = groupId.trim();
         this.rateLimitSeconds = rateLimitSeconds;
         this.privacyPolicyUrl = privacyPolicyUrl;
+        this.emailValidation = emailValidation;
+        this.emailFrom = emailFrom != null ? emailFrom.trim() : null;
     }
-
-
 
     /**
      * Gets the API key.
@@ -69,24 +74,22 @@ public final class SendlixConfig {
     }
 
     /**
+     * Gets the email address to use as the sender for validation emails.
+     *
+     * @return The sender email address, or null if not set
+     */
+    @Nullable
+    public String getEmailFrom() {
+        return emailFrom;
+    }
+
+    /**
      * Gets the rate limit in seconds.
      *
      * @return The rate limit in seconds between API calls
      */
     public int getRateLimitSeconds() {
         return rateLimitSeconds;
-    }
-
-    /**
-     * Validates that the configuration contains non-default values.
-     *
-     * @param defaultApiKey   The default API key placeholder
-     * @param defaultGroupId  The default group ID placeholder
-     * @return true if configuration is valid (not using defaults)
-     */
-    public boolean isValid(String defaultApiKey, String defaultGroupId) {
-        return !Objects.equals(this.apiKey, defaultApiKey) &&
-               !Objects.equals(this.groupId, defaultGroupId);
     }
 
     /**
@@ -118,9 +121,20 @@ public final class SendlixConfig {
     @Override
     public String toString() {
         return "SendlixConfig{" +
-                "apiKey='***HIDDEN***', " +
-                "groupId='" + groupId + '\'' +
+                "apiKey='" + apiKey + '\'' +
+                ", groupId='" + groupId + '\'' +
                 ", rateLimitSeconds=" + rateLimitSeconds +
+                ", privacyPolicyUrl='" + privacyPolicyUrl + '\'' +
+                ", emailValidation=" + emailValidation +
                 '}';
+    }
+
+    /**
+     * Checks if email validation is enabled.
+     *
+     * @return true if email validation is enabled, false otherwise
+     */
+    public boolean isEmailValidationEnabled() {
+        return emailValidation;
     }
 }

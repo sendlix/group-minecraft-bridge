@@ -2,7 +2,7 @@
 
 
 option java_package = "com.sendlix.api.v1";
-option java_outer_classname = "EmailProto";
+option java_outer_classname = "EmailDataProto";
 
  // Email address information
 message EmailData {
