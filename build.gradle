@@ -6,10 +6,9 @@ plugins {
 }
 
 group = 'com.sendlix.group.mc'
-version = '1.0.0'
+version = '1.1.0'
 
 repositories {
-
     mavenCentral()
     maven {
         name = "sonatype"
@@ -36,10 +35,10 @@ sourceSets {
 dependencies {
     // BungeeCord API from sonatype
     compileOnly 'net.md-5:bungeecord-api:1.21-R0.3'
-
     implementation 'io.grpc:grpc-protobuf:1.73.0'
+
     implementation 'io.grpc:grpc-stub:1.73.0'
-    implementation 'io.grpc:grpc-okhttp:1.73.0'
+    implementation 'io.grpc:grpc-netty:1.73.0'
 
     compileOnly 'org.apache.tomcat:annotations-api:6.0.53'
 }
@@ -64,7 +63,7 @@ protobuf {
 
 
 
-def targetJavaVersion = 8
+def targetJavaVersion = 11
 java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     sourceCompatibility = javaVersion
@@ -100,11 +99,15 @@ shadowJar {
 
 
     minimize {
-        exclude(dependency('io.grpc:grpc-okhttp:.*'))
+        exclude(dependency('io.grpc:grpc-netty:.*'))
         exclude(dependency('io.grpc:grpc-core:.*'))
     }
 
-
+    dependencies {
+        include(dependency('io.grpc:.*'))
+        include(dependency('io.netty:netty-codec-http2:.*'))
+        include(dependency('io.perfmark:.*'))
+    }
 
     exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
 }
