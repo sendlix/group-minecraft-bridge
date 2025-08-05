@@ -35,10 +35,10 @@ sourceSets {
 dependencies {
     // BungeeCord API from sonatype
     compileOnly 'net.md-5:bungeecord-api:1.21-R0.3'
-    implementation 'io.grpc:grpc-protobuf:1.73.0'
+    implementation 'io.grpc:grpc-protobuf:1.74.0'
 
-    implementation 'io.grpc:grpc-stub:1.73.0'
-    implementation 'io.grpc:grpc-netty:1.73.0'
+    implementation 'io.grpc:grpc-stub:1.74.0'
+    implementation 'io.grpc:grpc-netty:1.74.0'
 
     compileOnly 'org.apache.tomcat:annotations-api:6.0.53'
 }
@@ -49,7 +49,7 @@ protobuf {
     }
     plugins {
         grpc {
-            artifact = "io.grpc:protoc-gen-grpc-java:1.73.0"
+            artifact = "io.grpc:protoc-gen-grpc-java:1.74.0"
         }
     }
     generateProtoTasks {
