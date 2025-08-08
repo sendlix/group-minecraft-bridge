@@ -215,32 +215,6 @@ public void onPluginMessageReceived(String channel, Player player, byte[] messag
 }
 ```
 
-#### Velocity Integration
-
-```java
-// Register plugin message channel
-@Subscribe
-public void onProxyInitialization(ProxyInitializeEvent event) {
-    proxy.getChannelRegistrar().register(MinecraftChannelIdentifier.from("sendlix:newsletter"));
-}
-
-// Send newsletter command from backend
-public void triggerNewsletter(Player player, String email) {
-    ByteArrayDataOutput out = ByteStreams.newDataOutput();
-    out.writeUTF(email + " --silent --agree-privacy");
-    player.sendPluginMessage(MinecraftChannelIdentifier.from("sendlix:newsletter"), out.toByteArray());
-}
-
-// Handle status updates
-@Subscribe
-public void onPluginMessage(PluginMessageEvent event) {
-    if (event.getIdentifier().getId().equals("sendlix:newsletter")) {
-        String status = new String(event.getData(), StandardCharsets.UTF_8);
-        // Handle status updates...
-    }
-}
-```
-
 ## 🔧 Development
 
 ### Build Requirements
