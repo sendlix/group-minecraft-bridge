@@ -34,7 +34,7 @@ sourceSets {
 
 dependencies {
     // BungeeCord API from sonatype
-    compileOnly 'net.md-5:bungeecord-api:1.21-R0.3'
+    compileOnly 'net.md-5:bungeecord-api:1.21-R0.4'
 
     implementation 'com.google.protobuf:protobuf-java:3.25.8'
 
