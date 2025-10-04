@@ -49,10 +49,16 @@ public class GroupService {
                     .setEmail(email)
                     .build();
 
+            GroupProto.GroupEntry entry = GroupProto.GroupEntry.newBuilder()
+                    .putSubstitutions(MC_USERNAME_SUBSTITUTION, player.getName())
+                    .setEmail(emailData)
+                    .build();
+
+
             GroupProto.InsertEmailToGroupRequest request = GroupProto.InsertEmailToGroupRequest.newBuilder()
                     .setGroupId(plugin.getGroupId())
-                    .putSubstitutions(MC_USERNAME_SUBSTITUTION, player.getName())
-                    .addEmails(emailData)
+                    .addEntries(entry)
+                    .setOnFailure(GroupProto.FailureHandler.ABORT)
                     .build();
 
             // Record the API call since it was actually made

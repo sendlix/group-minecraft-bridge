@@ -12,10 +12,20 @@ service Group {
 	rpc CheckEmailInGroup(CheckEmailInGroupRequest) returns (CheckEmailInGroupResponse) {}
 }
 
+enum FailureHandler {
+	SKIP = 0;
+	ABORT = 1;
+}
+
 message InsertEmailToGroupRequest {
- 	repeated EmailData emails = 1;
-	string groupId = 2;
-	map<string, string> substitutions = 3;
+	repeated GroupEntry entries = 1;
+ 	string groupId = 2;
+	FailureHandler onFailure = 3;
+}
+
+message GroupEntry {
+	EmailData email = 1;
+	map<string, string> substitutions = 2;
 }
 
 message RemoveEmailFromGroupRequest {
