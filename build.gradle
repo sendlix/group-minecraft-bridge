@@ -95,6 +95,7 @@ processResources {
 
 shadowJar {
     archiveVersion.set('')
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 
     mergeServiceFiles()
 
