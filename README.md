@@ -1,178 +1,125 @@
-# Sendlix Group Minecaft Bridge - BungeeCord Plugin
+# Sendlix Group Minecraft Bridge – BungeeCord Plugin
 
 ![GitHub Release](https://img.shields.io/github/release/sendlix/group-minecraft-bridge)
 
-A BungeeCord plugin that allows players to subscribe to newsletters and receive email notifications.
+A BungeeCord plugin that lets players subscribe their email to a Sendlix group. Optionally, the plugin can send a one-time verification email if enabled. It does not send newsletters or general notifications by itself.
 
-## 📋 Overview
+## Overview
 
-The Sendlix Newsletter Plugin seamlessly integrates into your BungeeCord server infrastructure and provides players with the ability to subscribe to newsletters through a simple command. The plugin uses gRPC for communication with the Sendlix backend and offers robust features like rate limiting and email validation.
+This plugin integrates with the Sendlix API via gRPC. Players can register their email using a command. The plugin validates email format, applies rate limiting, and can require a privacy-policy confirmation. If email verification is enabled, a verification code is emailed and must be confirmed in-game before the email is submitted to the group.
 
-## ✨ Features
+## Features
 
-- **Newsletter Subscription**: Players can register for newsletters with `/newsletter <email>`
-- **Email Validation**: Automatic verification of email format validity
-- **Rate Limiting**: Protection against spam through time-based restrictions
-- **Asynchronous Processing**: Non-blocking API calls for optimal server performance
-- **gRPC Integration**: Secure and efficient communication with the Sendlix backend
-- **User-friendly Messages**: Multilingual success and error messages
-- **Plugin Message API**: Inter-server communication for advanced integrations
-- **Configurable**: Flexible configuration options via YAML
-- **Email Verification**: Optional verification step for added security
-- **Automatic Player Data**: Minecraft username automatically added as `{{mc_username}}` substitution
+- Newsletter subscription command: `/newsletter <email>`
+- Optional email verification flow (sends a single verification email with a code)
+- Email format validation
+- Rate limiting between attempts (default 5s)
+- Asynchronous gRPC calls to Sendlix (non-blocking)
+- Rich, clickable messages (English only)
+- Plugin Message API for backend integration (bidirectional on `sendlix:newsletter`)
+- YAML configuration with sensible defaults
+- Automatic player substitution: `{{mc_username}}`
 
-## 🚀 Installation
+What it does not do:
+- It does not send newsletters or general email notifications by itself; it only subscribes an email to a Sendlix group and can send a verification email if configured.
 
-### Prerequisites
+## Installation
 
-- BungeeCord Server (Version 1.20+)
-- Java 11 or higher
+Prerequisites
+- BungeeCord server (built against API 1.21, works on recent 1.20+)
+- Java 11+
 
-### Setup
+Setup
+1. Download the latest release JAR.
+2. Copy it to your BungeeCord server’s `plugins/` folder.
+3. Restart the server.
+4. Edit the generated `plugins/Sendlix Group Minecraft Bridge/config.yml`.
 
-1. **Download Plugin**: Download the latest version from the releases
-2. **Installation**: Copy the `.jar` file to your BungeeCord server's `plugins/` folder
-3. **Restart Server**: Restart your BungeeCord server
-4. **Configuration**: Edit the generated `plugins/Sendlix Newsletter/config.yml`
+## Configuration
 
-## ⚙️ Configuration
-
-After the first installation, a `config.yml` will be automatically created:
+A `config.yml` will be created on first run.
 
 ```yaml
-# Your Sendlix API Key (replace with your actual API key)
+# Your Sendlix API Key in format: secret.keyId
 apiKey: "your_api_key_here"
 
-# Your Sendlix Group ID (replace with your actual group ID)
+# Your Sendlix Group ID
 groupId: "your_group_id_here"
 
-# Rate limiting in seconds between API calls (default: 5 seconds)
+# Cooldown between attempts in seconds
 rateLimitSeconds: 5
 
 # Optional: URL to your privacy policy
 privacyPolicyUrl: "https://yourdomain.com/privacy-policy"
-```
 
-### Getting API Credentials
+# Optional: enable email verification (sends a code that must be confirmed)
+emailValidation: false
 
-1. Visit the Sendlix Dashboard
-2. Create a new API key and copy it
-3. Create a new group for newsletter subscriptions and copy the id.
-4. Replace the placeholder values in your `config.yml`:
-   - `apiKey`: Your generated API key
-   - `groupId`: Your target group ID for newsletter subscriptions
-
-IMPORTANT: The api key needs the permission `group.insert` to allow players to subscribe to the newsletter.
-
-## Add Email Verification
-
-To enable email verification, add the following configuration to your `config.yml`:
-
-```yaml
-# Enable email verification (default: false)
-emailValidation: true
-
-# Sender email address for verification emails
+# Required when emailValidation = true: sender email used to send the verification email
 emailFrom: "noreply@yourdomain.com"
 ```
 
-Enabling email verification ensures that new subscribers receive a verification email with a unique code. They must enter this code to complete their subscription.
+Notes
+- The API key must include the scope `group.insert`.
+- If `emailValidation` is enabled, the API key must also include the `sender` scope to send emails. Configure `emailFrom` to a valid/verified sender.
+- When `emailValidation` is enabled, an `emails/` folder is created under the plugin’s data directory containing editable templates: `verification.html` and `verification.txt`.
 
-**Important:** To send emails, the API key requires the `sender` permission.
+Template variables available in verification emails:
+- `{{code}}` – the verification code
+- `{{username}}` – the player’s in-game name
 
-When email verification is enabled, an `emails` folder is created in the config directory. This folder contains customizable email templates for verification emails.
+## Usage
 
-The following variables are automatically replaced in the email templates:
+Command
+- Basic: `/newsletter <email> [--agree-privacy] [--silent]`
+- Verify code (only when email verification is enabled): `/newsletter -c <code>`
 
-- `{{code}}`: The unique verification code.
-- `{{username}}`: The player's username.
+Arguments
+- `<email>` – required for subscription, e.g. `user@example.com`
+- `--agree-privacy` – required if `privacyPolicyUrl` is set; otherwise the plugin shows a clickable prompt to agree
+- `--silent` – suppresses normal chat output; errors may still be shown; the privacy-policy prompt can still appear if consent is missing. Primarily intended for integrations or server-side plugins that send their own user-facing messages (for example via the Plugin Message API), rather than using the plugin’s default messages. Regular players do not gain a benefit from this flag.
+- `-c <code>` – confirms the email using the received verification code
 
-To verify the email, players must enter the verification code using the command:
+Permission
+- `sendlix.newsletter.add` is required to use the command.
 
-```
-/newsletter -c <code>
-```
+Examples
+- `/newsletter player@gmail.com`
+- `/newsletter john.doe@web.de --agree-privacy`
+- `/newsletter user@domain.com --silent`
+- `/newsletter admin@server.com --silent --agree-privacy`
+- `/newsletter -c 12345`
 
-Where `<code>` is the verification code sent to their email.
+## Plugin Message API
 
-## 🎮 Usage
+Channel
+- Name: `sendlix:newsletter`
+- Direction: BungeeCord ↔ Backend servers (bidirectional)
 
-### For Players
+Outgoing (Bungee → Backend)
+- Sent when a player’s subscription flow changes state
+- Payload: UTF-8 string of a status code (raw bytes)
 
-**Newsletter Subscription:**
+Status values
+- `email_added`
+- `email_not_added`
+- `email_already_exists`
+- `email_verification_sent`
+- `email_verification_failed`
 
-```
-/newsletter <email> [--agree-privacy] [--silent]
-```
+Incoming (Backend → Bungee)
+- Payload: command arguments as a single UTF-8 string (raw bytes), exactly the same as a player would type
+- Examples:
+  - `"user@example.com"`
+  - `"user@example.com --agree-privacy"`
+  - `"user@example.com --silent"`
+  - `"user@example.com --silent --agree-privacy"`
+  - `"-c 12345"` (verification)
 
-**Command Arguments:**
+Important encoding note
+- The payload is a raw UTF-8 string without a length prefix. Ensure both sides use the same encoding. The examples below use `StandardCharsets.UTF_8`.
 
-- `<email>` - **Required**. Your email address (e.g., user@example.com)
-- `--agree-privacy` - **Optional**. Agrees to privacy policy (required if privacy policy URL is configured)
-- `--silent` - **Optional**. Suppresses messages (useful for backend server integration) the privacy policy confirmation will be sent to the player if the `--agree-privacy` flag is not set.
-
-**Examples:**
-
-```
-/newsletter player@gmail.com
-/newsletter john.doe@web.de --agree-privacy
-/newsletter user@domain.com --silent
-/newsletter admin@server.com --silent --agree-privacy
-```
-
-To access the newsletter command, players must have the permission `sendlix.newsletter.add`.
-
-## 🔗 Plugin Message API
-
-The plugin provides a comprehensive plugin message API for integration with backend servers.
-
-### Communication Channel
-
-- **Channel Name**: `sendlix:newsletter`
-- **Direction**: Bidirectional (BungeeCord ↔ Backend Servers)
-
-### Outgoing Messages (BungeeCord → Backend Server)
-
-When a player's newsletter subscription status changes, BungeeCord automatically sends status updates to the player's current backend server.
-
-**Message Format:**
-
-```
-Channel: "sendlix:newsletter"
-Data: Status enum byte array
-```
-
-**Status Values:**
-
-- `email_added` - Email successfully added to newsletter
-- `email_not_added` - Email could not be added (validation failed, API error, etc.)
-- `email_already_exists` - Email is already subscribed to newsletter
-- `email_verification_failed` - The provided Email verification code is invalid or expired
-- `email_verification_sent` - The email verification code was sent successfully
-
-### Incoming Messages (Backend Server → BungeeCord)
-
-Backend servers can trigger newsletter subscription commands by sending plugin messages.
-
-**Message Format:**
-
-```
-Channel: "sendlix:newsletter"
-Data: Command arguments as UTF-8 string
-```
-
-**Examples:**
-
-```
-"user@example.com"
-"user@example.com --agree-privacy"
-"user@example.com --silent"
-"user@example.com --silent --agree-privacy"
-```
-
-### Backend Server Integration
-
-#### Bukkit/Spigot Integration
+### Bukkit/Spigot integration example
 
 ```java
 // Register plugin message channels in onEnable()
@@ -181,130 +128,126 @@ getServer().getMessenger().registerIncomingPluginChannel(this, "sendlix:newslett
 
 // Trigger newsletter subscription from backend server
 public void subscribePlayer(Player player, String email, boolean silent) {
-    ByteArrayDataOutput out = ByteStreams.newDataOutput();
-    String command = email + " --agree-privacy";
-    if (silent) command += " --silent";
-
-    out.writeUTF(command);
-    plugin.getServer().sendPluginMessage(this, "sendlix:newsletter", out.toByteArray());
+    String command = email + " --agree-privacy" + (silent ? " --silent" : "");
+    byte[] payload = command.getBytes(StandardCharsets.UTF_8);
+    player.sendPluginMessage(this, "sendlix:newsletter", payload);
 }
 
 // Listen for status updates from BungeeCord
 @Override
 public void onPluginMessageReceived(String channel, Player player, byte[] message) {
-    if (channel.equals("sendlix:newsletter")) {
-        String status = new String(message, StandardCharsets.UTF_8);
-
-        switch (status) {
-           case "email_added":
-                player.sendMessage("§a✓ Successfully subscribed to newsletter!");
-                // Award achievement, update database, etc.
-                giveNewsletterReward(player);
-                break;
-
-            case "email_already_exists":
-                player.sendMessage("§e⚠ You're already subscribed!");
-                break;
-
-            case "email_not_added":
-                player.sendMessage("§c✗ Subscription failed. Please try again.");
-                logFailedSubscription(player);
-                break;
-        }
+    if (!channel.equals("sendlix:newsletter")) return;
+    String status = new String(message, StandardCharsets.UTF_8);
+    switch (status) {
+        case "email_added":
+            player.sendMessage("§a✓ Successfully subscribed to newsletter!");
+            break;
+        case "email_already_exists":
+            player.sendMessage("§e⚠ You're already subscribed!");
+            break;
+        case "email_not_added":
+            player.sendMessage("§c✗ Subscription failed. Please try again.");
+            break;
+        case "email_verification_sent":
+            player.sendMessage("§b✉ Verification email sent. Check your inbox.");
+            break;
+        case "email_verification_failed":
+            player.sendMessage("§c✗ Invalid or expired verification code.");
+            break;
     }
 }
 ```
 
-## 🔧 Development
+## Development
 
-### Build Requirements
-
+Build requirements
 - Java 11+
-- Gradle 7.0+
+- Gradle (wrapper included)
 - Git
 
-### Compiling the Project
-
+Compile
+```powershell
+# Windows PowerShell
+./gradlew.bat build
+./gradlew.bat shadowJar
+```
 ```bash
-# Clone repository
-git clone https://github.com/sendlix/sendlix-bungeecord.git
-cd sendlix-bungeecord
-
-# Install dependencies and compile
+# macOS/Linux
 ./gradlew build
-
-# Create Shadow JAR (for deployment)
 ./gradlew shadowJar
 ```
+The shaded JAR will be in `build/libs/`.
 
-The compiled JAR file can be found under `build/libs/`.
-
-### Project Structure
-
+Project layout
 ```
-src/main/java/com/sendlix/
-├── api/                    # API Classes
-│   ├── AccessToken.java    # Token Management
-│   └── Channel.java        # gRPC Channel Management
-├── commands/               # Command Handlers
+src/main/java/com/sendlix/group/mc/
+├── api/                    # API clients and gRPC channel
+│   ├── AccessToken.java
+│   ├── Channel.java
+│   ├── EmailService.java
+│   └── GroupService.java
+├── commands/
 │   └── NewsletterCommand.java
-├── config/                 # Configuration
+├── config/
+│   ├── EmailTemplateRepository.java
+│   ├── PluginProperties.java
 │   └── SendlixConfig.java
-├── core/                   # Plugin Core
+├── core/
 │   └── SendlixPlugin.java
-└── utils/                  # Utility Functions
-    ├── MessageSender.java  # Message Management
-    ├── RateLimiter.java    # Rate Limiting
-    └── Status.java         # Status Codes
+└── utils/
+    ├── MessageSender.java
+    ├── RateLimiter.java
+    └── Status.java
 ```
 
-## 📊 API Integration
+## API details
 
-The plugin uses gRPC for communication with the Sendlix backend:
+- Protocol: gRPC over HTTP/2 with TLS
+- Auth: JWT via API key exchange; header injected by client interceptor
+- Required scopes: `group.insert` and, when `emailValidation` is enabled, also `sender`
+- Substitutions: `{{mc_username}}` is attached to group entries
 
-- **Protocol**: gRPC over HTTP/2
-- **Authentication**: API Access Token
-- **Encryption**: TLS/SSL
-- **Data Format**: Protocol Buffers
+## Security
 
-## 🔒 Security
+- Rate limiting to prevent spam
+- Email format validation
+- TLS-encrypted API channel
+- Token-based authentication; rejects API keys without `group.insert`
 
-- **Rate Limiting**: Protection against spam and abuse
-- **Email Validation**: Server-side verification of email formats
-- **Secure API Communication**: TLS-encrypted connections
-- **Token-based Authentication**: Secure API access
+## Limitations and notes
 
-## 🐛 Troubleshooting
+- The plugin only subscribes emails to a Sendlix group and may send a one-time verification email; it does not deliver newsletters.
+- Messages are English-only (no built-in localization).
+- The command can only be used by players (not the console).
+- Verification code is 5 digits and expires after 60 minutes.
+- If `privacyPolicyUrl` is set and `--agree-privacy` isn’t provided, the plugin shows a clickable consent prompt (this may appear even in `--silent` mode).
+- Plugin Message API expects raw UTF-8 strings without a length prefix; ensure consistent encoding on both sides.
 
-### Common Issues
+## Troubleshooting
 
-**Plugin doesn't load:**
+Plugin doesn’t load
+- Check BungeeCord version (built against API 1.21) and Java 11+
+- Ensure the plugin JAR is in `plugins/`
 
-- Check your BungeeCord version (minimum 1.20)
-- Ensure all dependencies are present
+API connection errors
+- Verify your API key format `secret.keyId`
+- Ensure required scopes (`group.insert`; and `sender` when verification emails are enabled)
+- Check network/firewall connectivity to `api.sendlix.com:443`
 
-**API Connection Errors:**
+Configuration problems
+- Verify YAML formatting and required fields `apiKey` and `groupId`
+- If verification is enabled, set a valid `emailFrom`
 
-- Verify your Access Token
-- Check network connectivity
-- Review firewall settings
+Plugin message issues
+- Make sure both sides register `sendlix:newsletter`
+- Ensure payloads are raw UTF-8 strings (no length prefix)
+- Log exact bytes if decoding fails
 
-**Configuration Errors:**
+## Support
 
-- Validate YAML syntax
-- Ensure all required fields are filled
+- Issues: https://github.com/sendlix/sendlix-bungeecord/issues
+- Documentation: https://docs.sendlix.com
 
-**Plugin Message Issues:**
+## License
 
-- Ensure backend servers register the "sendlix:newsletter" channel
-- Verify plugin message data format matches expected structure
-- Check console logs for plugin message debugging information
-
-## 📞 Support
-
-- **Issues**: [GitHub Issues](https://github.com/sendlix/sendlix-bungeecord/issues)
-- **Documentation**: [Sendlix Docs](https://docs.sendlix.com)
-
-## 📄 License
-
-This project is licensed under the [AGPL-3.0 License](LICENSE).
+AGPL-3.0 – see LICENSE.
