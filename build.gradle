@@ -38,9 +38,9 @@ dependencies {
 
     implementation 'com.google.protobuf:protobuf-java:3.25.8'
 
-    implementation 'io.grpc:grpc-protobuf:1.76.0'
-    implementation 'io.grpc:grpc-stub:1.76.0'
-    implementation 'io.grpc:grpc-netty:1.76.0'
+    implementation 'io.grpc:grpc-protobuf:1.79.0'
+    implementation 'io.grpc:grpc-stub:1.79.0'
+    implementation 'io.grpc:grpc-netty:1.79.0'
 
 }
 
@@ -50,7 +50,7 @@ protobuf {
     }
     plugins {
         grpc {
-            artifact = "io.grpc:protoc-gen-grpc-java:1.76.0"
+            artifact = "io.grpc:protoc-gen-grpc-java:1.79.0"
         }
     }
     generateProtoTasks {
